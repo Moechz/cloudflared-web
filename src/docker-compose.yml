@@ -15,6 +15,17 @@
 #           non-root user, no privileged mode, no network_mode: host, no
 #           cap_add, explicit TZ, a healthcheck on the only service, and
 #           x-app-meta as the last block.
+#
+# Non-root (review item S1): the upstream image declares USER root, so the
+#           package pins user 1000:1000 itself, drops every capability and sets
+#           no-new-privileges. cloudflared only needs outbound HTTPS (no low
+#           port, no NET_ADMIN, no raw sockets) and writes nothing outside
+#           /config, so uid 1000 is enough; measured on hardware: the container
+#           reports uid=1000(node) and the UI answers HTTP 200.
+# Networking: bridge mode with the web UI published on 8121. Cloudflare
+#           terminates the public hostnames on its side; an ingress rule must
+#           therefore point at an address the container can reach (the NAS LAN
+#           IP or the docker bridge gateway), not 127.0.0.1.
 # Escaping: docker compose interpolates ${VAR}/$VAR in compose files, so any
 #           '$' meant for the shell is written '$$'.
 #
@@ -30,6 +41,10 @@ services:
     container_name: cloudflareddocker
     restart: unless-stopped
     user: "1000:1000"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     ports:
       - "8121:14333"
     environment:

@@ -8,7 +8,8 @@
 # --- internal project documents: kept locally, never published ---
 AGENTS.md
 HANDOFF.md
-/docs/
+# docs/ is published on purpose: it carries the review-required privilege
+# analysis and the remediation record (see docs/ROOT-PRIVILEGE.md).
 
 # --- build machine noise ---
 .DS_Store
